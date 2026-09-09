@@ -73,6 +73,10 @@ function doPost(event) {
 function handleRequest_(query) {
     const action = String(query.action || "");
 
+    if (action === "listTrainings") {
+        return listTrainings_();
+    }
+
     if (action === "getTraining") {
         return getTraining_(query);
     }
@@ -82,6 +86,81 @@ function handleRequest_(query) {
     }
 
     throw new Error(`Unknown action: ${action}`);
+}
+
+function listTrainings_() {
+    const cacheKey = "public-training-list";
+
+    const cached = getCacheJson_(cacheKey);
+
+    if (cached) {
+        return {
+            ok: true,
+            trainings: cached
+        };
+    }
+
+    const trainingsSheet = getSheet_(
+        getProperty_("TRAININGS_SHEET_ID"),
+        "Trainings",
+        TRAINING_HEADERS
+    );
+
+    const lastRow = trainingsSheet.getLastRow();
+
+    if (lastRow < 2) {
+        return {
+            ok: true,
+            trainings: []
+        };
+    }
+
+    const rows = trainingsSheet
+        .getRange(2, 1, lastRow - 1, 14)
+        .getValues();
+
+    /*
+     * На главную отдаём только публичную сводку.
+     * Полный комментарий, координаты и прочие детали
+     * доступны только по конкретному UUID тренировки.
+     */
+    const trainings = rows
+        .map((row) => {
+            return {
+                id: String(row[0]),
+                date: formatSheetDate_(row[2]),
+                time: String(row[3]),
+                types: JSON.parse(String(row[4] || "[]")),
+
+                venue: {
+                    name: String(row[9] || "")
+                },
+
+                quorum: Number(row[12])
+            };
+        })
+        .sort((a, b) => {
+            const dateCompare =
+                b.date.localeCompare(a.date);
+
+            if (dateCompare !== 0) {
+                return dateCompare;
+            }
+
+            return b.time.localeCompare(a.time);
+        })
+        .slice(0, 30);
+
+    putCacheJson_(
+        cacheKey,
+        trainings,
+        20
+    );
+
+    return {
+        ok: true,
+        trainings
+    };
 }
 
 function getTraining_(query) {
