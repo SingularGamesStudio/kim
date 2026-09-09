@@ -728,27 +728,87 @@ h3 {
 .header-brand {
     display: flex;
     align-items: center;
-    gap: 15px;
+    min-width: 0;
+    gap: 16px;
+}
+
+.header-brand-text {
+    min-width: 0;
 }
 
 .club-logo {
     display: block;
-    width: 58px;
-    height: 58px;
-    flex: 0 0 auto;
+    width: 76px !important;
+    height: 76px !important;
+    max-width: 76px !important;
+    min-width: 76px;
+    max-height: 76px !important;
+    flex: 0 0 76px;
+
+    margin: 0;
+    padding: 0;
+
     border: 1px solid var(--line);
-    border-radius: 15px;
+    border-radius: 16px;
     background: #ffffff;
+
     object-fit: cover;
+    object-position: center;
+
     box-shadow:
         0 8px 22px rgba(0, 0, 0, 0.24);
 }
 
+.header-brand .eyebrow {
+    margin-bottom: 3px;
+}
+
+.header-brand h1 {
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+.header-brand .header-text {
+    margin-bottom: 0;
+}
+
+@media (max-width: 720px) {
+    .club-logo {
+        width: 62px !important;
+        height: 62px !important;
+        max-width: 62px !important;
+        min-width: 62px;
+        max-height: 62px !important;
+        flex-basis: 62px;
+        border-radius: 14px;
+    }
+
+    .header-brand {
+        gap: 13px;
+    }
+
+    .header-brand h1 {
+        font-size: clamp(1.75rem, 9vw, 2.4rem);
+    }
+}
+
 @media (max-width: 440px) {
     .club-logo {
-        width: 48px;
-        height: 48px;
-        border-radius: 13px;
+        width: 52px !important;
+        height: 52px !important;
+        max-width: 52px !important;
+        min-width: 52px;
+        max-height: 52px !important;
+        flex-basis: 52px;
+        border-radius: 12px;
+    }
+
+    .header-brand {
+        gap: 11px;
+    }
+
+    .header-brand h1 {
+        white-space: normal;
     }
 }
 
@@ -802,10 +862,9 @@ h3 {
 }
 
 .training-guidance {
-    margin-top: 22px;
+    margin-top: 28px;
     border: 1px solid rgba(49, 184, 120, 0.3);
     border-radius: 12px;
-    padding: 17px;
     background:
         linear-gradient(
             135deg,
@@ -814,17 +873,50 @@ h3 {
         );
 }
 
-.training-guidance h2 {
-    margin-bottom: 12px;
-    font-size: 1.05rem;
+.training-guidance summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 54px;
+    padding: 15px 17px;
+    color: #d9f5e6;
+    font-size: 1rem;
+    font-weight: 750;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
 }
 
-.training-guidance p {
+.training-guidance summary::-webkit-details-marker {
+    display: none;
+}
+
+.training-guidance summary::after {
+    content: "⌄";
+    color: var(--accent);
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: transform 150ms ease;
+}
+
+.training-guidance[open] summary {
+    border-bottom: 1px solid rgba(49, 184, 120, 0.22);
+}
+
+.training-guidance[open] summary::after {
+    transform: rotate(180deg);
+}
+
+.training-guidance-content {
+    padding: 15px 17px 17px;
+}
+
+.training-guidance-content p {
     margin-bottom: 10px;
     color: var(--text-muted);
 }
 
-.training-guidance p:last-child {
+.training-guidance-content p:last-child {
     margin-bottom: 0;
 }
 
