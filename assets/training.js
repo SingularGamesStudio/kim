@@ -345,7 +345,7 @@ function renderVotingOptions() {
     voteOptions.innerHTML = `
         <fieldset class="vote-fieldset">
             <legend>
-                Какой вариант вам подходит?
+                Что проведём?
             </legend>
 
             <div class="vote-choice-grid">
@@ -353,7 +353,7 @@ function renderVotingOptions() {
                     .map((option) => {
                         const label =
                             option === "Тык"
-                                ? "Тык — без разницы"
+                                ? "Тык"
                                 : option;
 
                         return `
@@ -632,7 +632,7 @@ function renderVoteResults(relevantSignups) {
         .map((choice) => {
             const label =
                 choice === "Тык"
-                    ? "Без разницы"
+                    ? "Тык"
                     : choice;
 
             return `
