@@ -334,7 +334,8 @@ async function fetchWeather(training) {
         latitude: String(training.venue.lat),
         longitude: String(training.venue.lng),
         hourly:
-            "temperature_2m,precipitation_probability,precipitation",
+            "temperature_2m,precipitation_probability,precipitation," +
+            "weather_code,wind_speed_10m,wind_gusts_10m",
         timezone: "Europe/Moscow",
         forecast_days: "16"
     });
@@ -408,97 +409,270 @@ async function fetchWeather(training) {
 }
 
 function buildWeatherText(data, start) {
+    const hourly = data?.hourly;
+
     if (
-        !data?.hourly?.time ||
-        !data?.hourly?.temperature_2m ||
-        !data?.hourly?.precipitation_probability ||
-        !data?.hourly?.precipitation
+        !hourly?.time ||
+        !hourly?.temperature_2m ||
+        !hourly?.precipitation_probability ||
+        !hourly?.precipitation ||
+        !hourly?.weather_code ||
+        !hourly?.wind_speed_10m
     ) {
         return null;
     }
 
     /*
-     * Берём окно ±2 часа от начала:
-     * температура усредняется,
-     * вероятность осадков — максимум,
-     * осадки — сумма по окну.
+     * Рассматриваем интервал от двух часов до начала до двух часов
+     * после начала. Это полезнее одной точки во времени:
+     * осадки могут сдвинуться на час, а участники идут до точки сбора
+     * до формального начала.
      */
-    const relevantIndexes = [-2, -1, 0, 1, 2]
+    const indexes = [-2, -1, 0, 1, 2]
         .map((offset) => {
             const date = new Date(
                 start.getTime() +
                 offset * 60 * 60 * 1000
             );
 
-            return moscowHourIndex(date);
-        })
-        .map((time) => {
-            return data.hourly.time.indexOf(time);
+            const hour = moscowHourIndex(date);
+
+            return hourly.time.indexOf(hour);
         })
         .filter((index) => index >= 0);
 
-    if (!relevantIndexes.length) {
+    if (!indexes.length) {
         return null;
     }
 
-    const temperatures = relevantIndexes.map(
+    const temperatures = indexes.map((index) => {
+        return Number(hourly.temperature_2m[index]);
+    });
+
+    const precipitationProbabilities = indexes.map(
         (index) => {
-            return data.hourly.temperature_2m[index];
+            return Number(
+                hourly.precipitation_probability[index]
+            );
         }
     );
 
-    const probabilities = relevantIndexes.map(
+    const precipitationAmounts = indexes.map(
         (index) => {
-            return data.hourly
-                .precipitation_probability[index];
+            return Number(hourly.precipitation[index]);
         }
     );
 
-    const precipitation = relevantIndexes.map(
-        (index) => {
-            return data.hourly.precipitation[index];
-        }
-    );
+    const weatherCodes = indexes.map((index) => {
+        return Number(hourly.weather_code[index]);
+    });
 
-    const averageTemperature =
-        temperatures.reduce((sum, value) => {
-            return sum + value;
-        }, 0) / temperatures.length;
+    const windSpeeds = indexes.map((index) => {
+        return Number(hourly.wind_speed_10m[index]);
+    });
+
+    const windGusts = Array.isArray(hourly.wind_gusts_10m)
+        ? indexes.map((index) => {
+            return Number(hourly.wind_gusts_10m[index]);
+        })
+        : [];
+
+    const averageTemperature = average(temperatures);
 
     const temperature = Math.round(
         averageTemperature
     );
 
-    const maxProbability = Math.max(
-        ...probabilities
+    const maxPrecipitationProbability = Math.max(
+        ...precipitationProbabilities
     );
 
-    const precipitationAmount =
-        precipitation.reduce((sum, value) => {
-            return sum + value;
-        }, 0);
+    const totalPrecipitation = sum(
+        precipitationAmounts
+    );
 
-    const sign = temperature > 0 ? "+" : "";
+    const maxWindSpeed = Math.max(...windSpeeds);
 
-    let precipitationText =
-        "без существенных осадков";
+    const maxWindGust = windGusts.length
+        ? Math.max(...windGusts)
+        : 0;
 
-    if (
-        maxProbability >= 60 ||
-        precipitationAmount >= 1
-    ) {
-        precipitationText =
-            `осадки вероятны до ${maxProbability}%` +
-            `, около ${precipitationAmount.toFixed(1)} мм`;
-    } else if (maxProbability >= 30) {
-        precipitationText =
-            `небольшая вероятность осадков: до ${maxProbability}%`;
+    const weatherDescription = weatherText(
+        weatherCodes,
+        maxPrecipitationProbability,
+        totalPrecipitation,
+        averageTemperature
+    );
+
+    const windDescription = windText(
+        maxWindSpeed,
+        maxWindGust
+    );
+
+    const temperatureSign =
+        temperature > 0 ? "+" : "";
+
+    const weatherParts = [
+        `${temperatureSign}${temperature}°C`
+    ];
+
+    if (weatherDescription) {
+        weatherParts.push(weatherDescription);
     }
 
-    return (
-        `Прогноз: ${sign}${temperature}°C, ` +
-        `${precipitationText}.`
+    if (windDescription) {
+        weatherParts.push(windDescription);
+    }
+
+    return `Прогноз: ${weatherParts.join(", ")}.`;
+}
+
+function weatherText(
+    weatherCodes,
+    maxProbability,
+    totalPrecipitation,
+    averageTemperature
+) {
+    const codes = new Set(weatherCodes);
+
+    const hasThunderstorm = hasAnyCode(
+        codes,
+        [95, 96, 99]
     );
+
+    const hasHeavySnow = hasAnyCode(
+        codes,
+        [75, 86]
+    );
+
+    const hasSnow = hasAnyCode(
+        codes,
+        [71, 73, 77, 85]
+    );
+
+    const hasFreezingRain = hasAnyCode(
+        codes,
+        [56, 57, 66, 67]
+    );
+
+    const hasHeavyRain = hasAnyCode(
+        codes,
+        [65, 82]
+    );
+
+    const hasRain = hasAnyCode(
+        codes,
+        [53, 55, 63, 80, 81]
+    );
+
+    const hasLightRain = hasAnyCode(
+        codes,
+        [51, 61]
+    );
+
+    /*
+     * Приоритет:
+     * гроза → метель/сильный снег → снег → ледяной дождь →
+     * дождь → небольшой дождь.
+     *
+     * WMO weather_code — более надёжный индикатор типа осадков,
+     * чем только precipitation amount. Температура используется
+     * как дополнительная страховка для пограничных случаев.
+     */
+    if (hasThunderstorm) {
+        return "гроза";
+    }
+
+    if (hasHeavySnow) {
+        return "метель";
+    }
+
+    if (hasSnow) {
+        return "снег";
+    }
+
+    if (hasFreezingRain) {
+        return "ледяной дождь";
+    }
+
+    if (hasHeavyRain) {
+        return "сильный дождь";
+    }
+
+    if (hasRain) {
+        return "дождь";
+    }
+
+    if (hasLightRain) {
+        return "небольшой дождь";
+    }
+
+    /*
+     * Fallback: иногда weather_code может быть неинформативным,
+     * но API уже сообщает ненулевую вероятность/количество осадков.
+     */
+    if (
+        maxProbability >= 70 ||
+        totalPrecipitation >= 3
+    ) {
+        return averageTemperature <= 1
+            ? "снег"
+            : "дождь";
+    }
+
+    if (
+        maxProbability >= 35 ||
+        totalPrecipitation >= 0.2
+    ) {
+        return averageTemperature <= 1
+            ? "небольшой снег"
+            : "небольшой дождь";
+    }
+
+    return "";
+}
+
+function windText(maxWindSpeed, maxWindGust) {
+    /*
+     * Значения в км/ч, так как Open-Meteo использует km/h
+     * по умолчанию.
+     *
+     * 35 км/ч постоянного ветра или 50 км/ч порывов — уже
+     * неприятные условия для тренировки и переноски снаряжения.
+     */
+    if (maxWindSpeed >= 45 || maxWindGust >= 65) {
+        return "очень сильный ветер";
+    }
+
+    if (maxWindSpeed >= 30 || maxWindGust >= 45) {
+        return "сильный ветер";
+    }
+
+    if (maxWindSpeed >= 20 || maxWindGust >= 35) {
+        return "ветрено";
+    }
+
+    return "";
+}
+
+function hasAnyCode(codeSet, expectedCodes) {
+    return expectedCodes.some((code) => {
+        return codeSet.has(code);
+    });
+}
+
+function average(values) {
+    if (!values.length) {
+        return 0;
+    }
+
+    return sum(values) / values.length;
+}
+
+function sum(values) {
+    return values.reduce((total, value) => {
+        return total + value;
+    }, 0);
 }
 
 function moscowHourIndex(date) {
