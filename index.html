@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+    <title>Тренировки клуба фехтования</title>
+
+    <link rel="stylesheet" href="assets/style.css">
+
+    <script
+        src="https://accounts.google.com/gsi/client"
+        async
+    ></script>
+
+    <script defer src="assets/config.js"></script>
+    <script defer src="assets/api.js"></script>
+    <script defer src="assets/admin.js"></script>
+</head>
+
+<body>
+    <main class="page-shell">
+        <header class="site-header">
+            <div>
+                <p class="eyebrow">Клуб фехтования</p>
+                <h1>Тренировки</h1>
+                <p class="header-text">
+                    Записывайтесь на странице конкретной тренировки.
+                </p>
+            </div>
+
+            <button
+                id="create-training-button"
+                class="button button-primary"
+                type="button"
+            >
+                Создать тренировку
+            </button>
+        </header>
+
+        <p
+            id="admin-state"
+            class="status-text"
+            aria-live="polite"
+        ></p>
+
+        <section class="section">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Ближайшие события</p>
+                    <h2>Анонсы тренировок</h2>
+                </div>
+            </div>
+
+            <div
+                id="training-list"
+                class="training-list"
+            >
+                <p class="status-text">Загружаем анонсы…</p>
+            </div>
+        </section>
+    </main>
+</body>
+</html>ф

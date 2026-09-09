@@ -1,0 +1,23 @@
+# Node dependencies: никогда не коммитим.
+node_modules/
+
+# Локальные логи npm.
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ОС и IDE.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Локальные временные файлы.
+*.tmp
+*.bak
+*.swp
+
+# Никогда не хранить реальные OAuth-секреты.
+*.pem
+*.key
+client_secret*.json

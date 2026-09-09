@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+    <title>Создать тренировку</title>
+
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="vendor/ol.css">
+
+    <script
+        src="https://accounts.google.com/gsi/client"
+        async
+    ></script>
+
+    <script defer src="assets/config.js"></script>
+    <script defer src="assets/api.js"></script>
+    <script defer src="vendor/ol.js"></script>
+    <script defer src="assets/create.js"></script>
+</head>
+
+<body>
+    <main class="page-shell">
+        <header class="compact-header">
+            <a href="index.html">← К списку тренировок</a>
+            <h1>Создать тренировку</h1>
+            <p
+                id="auth-state"
+                class="status-text"
+                aria-live="polite"
+            ></p>
+        </header>
+
+        <form
+            id="training-form"
+            class="editor-form hidden"
+        >
+            <section class="form-section">
+                <h2>Вид тренировки</h2>
+
+                <div class="checkbox-grid">
+                    <label class="check-card">
+                        <input
+                            type="checkbox"
+                            name="type"
+                            value="Мягкая строевая"
+                        >
+                        <span>Мягкая строевая</span>
+                    </label>
+
+                    <label class="check-card">
+                        <input
+                            type="checkbox"
+                            name="type"
+                            value="Мягкая Дуэльная"
+                        >
+                        <span>Мягкая дуэльная</span>
+                    </label>
+
+                    <label class="check-card">
+                        <input
+                            type="checkbox"
+                            name="type"
+                            value="Твёрдая Дуэльная"
+                        >
+                        <span>Твёрдая дуэльная</span>
+                    </label>
+
+                    <label class="check-card">
+                        <input
+                            type="checkbox"
+                            name="type"
+                            value="Крафт"
+                        >
+                        <span>Крафт</span>
+                    </label>
+                </div>
+
+                <p class="hint">
+                    Если выбрать несколько вариантов, участники смогут голосовать.
+                </p>
+            </section>
+
+            <section class="form-section">
+                <h2>Время и кворум</h2>
+
+                <div class="form-grid">
+                    <label>
+                        День
+                        <input id="date" type="date" required>
+                    </label>
+
+                    <label>
+                        Время
+                        <input
+                            id="time"
+                            type="time"
+                            value="20:00"
+                            required
+                        >
+                    </label>
+
+                    <label>
+                        Кворум
+                        <input
+                            id="quorum"
+                            type="number"
+                            min="1"
+                            value="4"
+                            required
+                        >
+                    </label>
+                </div>
+            </section>
+
+            <section class="form-section">
+                <h2>Комментарий</h2>
+
+                <textarea
+                    id="comment"
+                    placeholder="Необязательно"
+                ></textarea>
+            </section>
+
+            <section class="form-section">
+                <h2>Локации</h2>
+
+                <div class="form-grid">
+                    <label>
+                        Место деплоя
+
+                        <select id="deployment-preset">
+                            <option value="8ка">8ка</option>
+                            <option value="КПМ">КПМ</option>
+                            <option value="custom">Другое место</option>
+                        </select>
+                    </label>
+
+                    <label
+                        id="deployment-custom-wrap"
+                        class="hidden"
+                    >
+                        Название своего места
+                        <input id="deployment-custom">
+                    </label>
+
+                    <label>
+                        Место тренировки
+
+                        <select id="venue-preset">
+                            <option value="Обезьянник">
+                                Обезьянник
+                            </option>
+                            <option value="custom">
+                                Другое место
+                            </option>
+                        </select>
+                    </label>
+
+                    <label
+                        id="venue-custom-wrap"
+                        class="hidden"
+                    >
+                        Название своего места
+                        <input id="venue-custom">
+                    </label>
+                </div>
+
+                <div class="map-help">
+                    Для custom-локации перетащите нужный крестик на карте.
+                    Зелёный — сбор и деплой, красный — тренировка.
+                </div>
+
+                <div id="map" class="map-editor"></div>
+            </section>
+
+            <button
+                class="button button-primary"
+                type="submit"
+            >
+                Создать тренировку
+            </button>
+        </form>
+
+        <section
+            id="result"
+            class="creation-result hidden"
+        ></section>
+    </main>
+</body>
+</html>
