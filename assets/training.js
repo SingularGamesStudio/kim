@@ -190,8 +190,6 @@ function renderTraining() {
         </details>
     `;
 
-    renderMap();
-
     document
         .querySelector("#signup-section")
         .classList.remove("hidden");
@@ -201,35 +199,91 @@ function renderTraining() {
         .classList.remove("hidden");
 
     renderVotingOptions();
+    showDeferredMapLoader();
+    scheduleMapRender();
+}
+
+function showDeferredMapLoader() {
+    const mapSection = document.querySelector("#map-section");
+    const mapLoader = document.querySelector("#map-loader");
+    const mapStatus = document.querySelector("#map-status");
+
+
+    if (!mapSection || !mapLoader || !mapStatus) {
+        return;
+    }
+
+
+    mapSection.classList.remove("hidden");
+    mapLoader.classList.remove("hidden");
+
+
+    mapStatus.textContent = "Загружаем карту…";
+}
+
+
+/*
+ * Два кадра нужны, чтобы браузер гарантированно успел:
+ * 1. применить DOM-изменения;
+ * 2. показать тренировку, форму, комментарии и спиннер карты;
+ * 3. только потом начать тяжёлую инициализацию OpenLayers.
+ */
+function scheduleMapRender() {
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                renderMap();
+            }, 0);
+        });
+    });
 }
 
 function renderMap() {
     const mapElement = document.querySelector("#map");
+    const mapLoader = document.querySelector("#map-loader");
+    const mapStatus = document.querySelector("#map-status");
+
 
     if (!mapElement || !window.ol) {
         console.warn(
             "OpenLayers не загружен: карта не будет показана."
         );
 
+
+        if (mapLoader) {
+            mapLoader.classList.add("hidden");
+        }
+
+
+        if (mapStatus) {
+            mapStatus.textContent = "Не удалось загрузить карту.";
+        }
+
+
         return;
     }
 
+
     mapElement.classList.remove("hidden");
+
 
     if (trainingMap) {
         trainingMap.setTarget(undefined);
         trainingMap = null;
     }
 
+
     const deploymentFeature = createMapMarker(
         training.deployment,
         "deployment"
     );
 
+
     const venueFeature = createMapMarker(
         training.venue,
         "venue"
     );
+
 
     const vectorLayer = new ol.layer.Vector({
         source: new ol.source.Vector({
@@ -239,29 +293,39 @@ function renderMap() {
             ]
         }),
 
+
         style: mapMarkerStyle
     });
+
+
+    const osmSource = new ol.source.OSM();
+
 
     const deploymentCoordinate = ol.proj.fromLonLat([
         training.deployment.lng,
         training.deployment.lat
     ]);
 
+
     const venueCoordinate = ol.proj.fromLonLat([
         training.venue.lng,
         training.venue.lat
     ]);
 
+
     trainingMap = new ol.Map({
         target: mapElement,
 
+
         layers: [
             new ol.layer.Tile({
-                source: new ol.source.OSM()
+                source: osmSource
             }),
+
 
             vectorLayer
         ],
+
 
         view: new ol.View({
             center: deploymentCoordinate,
@@ -269,15 +333,41 @@ function renderMap() {
         })
     });
 
+
     const extent = ol.extent.boundingExtent([
         deploymentCoordinate,
         venueCoordinate
     ]);
 
+
     trainingMap.getView().fit(extent, {
         padding: [70, 70, 70, 70],
         maxZoom: 17,
         duration: 0
+    });
+
+
+    /*
+     * rendercomplete приходит, когда OpenLayers закончил
+     * текущий рендер и загрузку нужных тайлов.
+     */
+    trainingMap.once("rendercomplete", () => {
+        if (mapLoader) {
+            mapLoader.classList.add("hidden");
+        }
+
+
+        if (mapStatus) {
+            mapStatus.textContent = "Карта загружена.";
+        }
+    });
+
+
+    osmSource.on("tileloaderror", () => {
+        if (mapStatus) {
+            mapStatus.textContent =
+                "Часть карты не удалось загрузить.";
+        }
     });
 }
 
