@@ -6,7 +6,14 @@
         name="viewport"
         content="width=device-width, initial-scale=1"
     >
-    <title>Тренировка</title>
+    
+    <link
+        rel="icon"
+        type="image/jpeg"
+        href="assets/club-logo.jpg"
+    >
+
+    <title>КИМ МФТИ - тренировка</title>
 
     <link rel="stylesheet" href="assets/style.css">
     <link rel="stylesheet" href="vendor/ol.css">
@@ -44,8 +51,21 @@
             ← Все тренировки
         </a>
 
-        <section id="training" class="training-hero">
-            <p class="status-text">Загружаем тренировку…</p>
+        <section
+            id="training"
+            class="training-hero"
+            aria-live="polite"
+        >
+            <div class="loading-state">
+                <span
+                    class="spinner spinner-large"
+                    aria-hidden="true"
+                ></span>
+
+                <p class="status-text">
+                    Загружаем тренировку…
+                </p>
+            </div>
         </section>
 
         <div id="map" class="training-map hidden"></div>

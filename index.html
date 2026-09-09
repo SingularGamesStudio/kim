@@ -6,7 +6,14 @@
         name="viewport"
         content="width=device-width, initial-scale=1"
     >
-    <title>Тренировки клуба фехтования</title>
+
+    <link
+        rel="icon"
+        type="image/jpeg"
+        href="assets/club-logo.jpg"
+    >
+
+    <title>КИМ МФТИ - тренировки</title>
 
     <link rel="stylesheet" href="assets/style.css">
 
@@ -23,11 +30,16 @@
 <body>
     <main class="page-shell">
         <header class="site-header">
-            <div>
-                <p class="eyebrow">Клуб фехтования</p>
-                <h1>Тренировки</h1>
+            <div class="header-brand">
+                <img
+                    class="club-logo"
+                    src="assets/club-logo.jpg"
+                    alt="Эмблема клуба фехтования"
+                >
+                <p class="eyebrow">фехтовальное направление</p>
+                <h1>КИМ МФТИ</h1>
                 <p class="header-text">
-                    Записывайтесь на странице конкретной тренировки.
+                    Запись на странице конкретной тренировки.
                 </p>
             </div>
 
@@ -36,7 +48,7 @@
                 class="button button-primary"
                 type="button"
             >
-                Создать тренировку
+                Создать тренировку (админ)
             </button>
         </header>
 
@@ -49,16 +61,25 @@
         <section class="section">
             <div class="section-heading">
                 <div>
-                    <p class="eyebrow">Ближайшие события</p>
-                    <h2>Анонсы тренировок</h2>
+                    <p class="eyebrow">Запись на тренировки</p>
                 </div>
             </div>
 
             <div
                 id="training-list"
                 class="training-list"
+                aria-live="polite"
             >
-                <p class="status-text">Загружаем анонсы…</p>
+                <div class="loading-state">
+                    <span
+                        class="spinner"
+                        aria-hidden="true"
+                    ></span>
+
+                    <p class="status-text">
+                        Загружаем анонсы…
+                    </p>
+                </div>
             </div>
         </section>
     </main>

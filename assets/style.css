@@ -693,3 +693,171 @@ h3 {
         min-width: 92px;
     }
 }
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 72px;
+    padding: 12px 0;
+}
+
+.spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+    border: 3px solid rgba(49, 184, 120, 0.22);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spinner-rotate 700ms linear infinite;
+}
+
+.spinner-large {
+    width: 26px;
+    height: 26px;
+    border-width: 4px;
+}
+
+@keyframes spinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.club-logo {
+    display: block;
+    width: 58px;
+    height: 58px;
+    flex: 0 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: #ffffff;
+    object-fit: cover;
+    box-shadow:
+        0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+@media (max-width: 440px) {
+    .club-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 13px;
+    }
+}
+
+.training-card {
+    display: grid;
+    grid-template-columns: 158px minmax(0, 1fr) auto;
+    align-items: center;
+}
+
+.training-card-date {
+    color: var(--accent);
+    font-size: 1.03rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.training-card-main {
+    min-width: 0;
+}
+
+.card-type {
+    margin-bottom: 4px;
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 750;
+}
+
+@media (max-width: 620px) {
+    .training-card {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 14px;
+    }
+
+    .training-card-date {
+        grid-column: 1;
+    }
+
+    .training-card-main {
+        grid-column: 1;
+    }
+
+    .card-arrow {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+}
+
+.status-error {
+    color: #ff8f8f;
+    font-weight: 650;
+}
+
+.training-guidance {
+    margin-top: 22px;
+    border: 1px solid rgba(49, 184, 120, 0.3);
+    border-radius: 12px;
+    padding: 17px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(49, 184, 120, 0.09),
+            rgba(24, 33, 44, 0.7)
+        );
+}
+
+.training-guidance h2 {
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+}
+
+.training-guidance p {
+    margin-bottom: 10px;
+    color: var(--text-muted);
+}
+
+.training-guidance p:last-child {
+    margin-bottom: 0;
+}
+
+.weather-warning {
+    border: 2px solid #f3b648;
+    border-radius: 14px;
+    padding: 19px;
+    background:
+        linear-gradient(
+            135deg,
+            rgba(180, 102, 11, 0.42),
+            rgba(75, 42, 10, 0.56)
+        );
+    color: #ffe5ad;
+    box-shadow:
+        0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.weather-warning p {
+    margin-bottom: 9px;
+}
+
+.weather-warning p:last-child {
+    margin-bottom: 0;
+}
+
+.weather-warning-title {
+    color: #fff4d1;
+    font-size: 1.2rem;
+    font-weight: 850;
+}
+
+.weather-warning-detail {
+    color: #f3d59b;
+    font-size: 0.88rem;
+}

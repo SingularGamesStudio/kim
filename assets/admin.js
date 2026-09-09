@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", () => {
     createButton.addEventListener("click", async () => {
         createButton.disabled = true;
 
+        state.classList.remove("status-error");
+
         state.textContent =
             "Открываем вход Google и проверяем права администратора…";
 
@@ -30,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             state.textContent =
                 "Не удалось войти или у аккаунта нет доступа к закрытой таблице.";
+            state.classList.add("status-error");
 
             createButton.disabled = false;
         }
@@ -65,16 +68,21 @@ async function loadPublicTrainingList() {
                 const href =
                     `training.html?id=${encodeURIComponent(training.id)}`;
 
+                const dateLabel = shortTrainingDate(
+                    training.date,
+                    training.time
+                );
+
                 return `
                     <a class="training-card" href="${href}">
-                        <div>
-                            <p class="card-date">
-                                ${esc(fmtDate(training.date))}
-                                ·
-                                ${esc(training.time)}
-                            </p>
+                        <div class="training-card-date">
+                            ${esc(dateLabel)}
+                        </div>
 
-                            <h3>${esc(title)}</h3>
+                        <div class="training-card-main">
+                            <p class="card-type">
+                                ${esc(title)}
+                            </p>
 
                             <p class="card-meta">
                                 ${esc(training.venue.name)}
@@ -97,4 +105,23 @@ async function loadPublicTrainingList() {
             </p>
         `;
     }
+}
+
+function shortTrainingDate(isoDate, time) {
+    const date = new Date(
+        `${isoDate}T12:00:00+03:00`
+    );
+
+    const weekday = new Intl.DateTimeFormat("ru-RU", {
+        weekday: "short",
+        timeZone: "Europe/Moscow"
+    }).format(date);
+
+    const dayMonth = new Intl.DateTimeFormat("ru-RU", {
+        day: "numeric",
+        month: "short",
+        timeZone: "Europe/Moscow"
+    }).format(date);
+
+    return `${weekday}, ${dayMonth} · ${time}`;
 }

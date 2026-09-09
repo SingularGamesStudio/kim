@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
      */
     if (!getStoredAccessToken()) {
         state.innerHTML = `
-            Для создания тренировки откройте
+            Не удалось подтвердить аккаунт - для создания тренировки откройте
             <a href="index.html">главную страницу</a>
             и нажмите «Создать тренировку».
         `;
@@ -279,8 +279,12 @@ function initializeSubmit() {
             button.textContent = "Создаём…";
 
             try {
-                training.weather =
+                const weatherResult =
                     await fetchWeather(training);
+
+                training.weather = weatherResult.text;
+                training.weatherOk = weatherResult.ok;
+                training.weatherReason = weatherResult.reason;
 
                 await appendTraining(training);
 
@@ -311,6 +315,21 @@ async function fetchWeather(training) {
         `${training.date}T${training.time}:00+03:00`
     );
 
+    const maxForecastDistanceMs =
+        16 * 24 * 60 * 60 * 1000;
+
+    if (
+        start.getTime() - Date.now() >
+        maxForecastDistanceMs
+    ) {
+        return {
+            ok: false,
+            text: "Прогноз погоды уточняется.",
+            reason:
+                "Дата тренировки находится за пределами 16-дневного горизонта прогноза."
+        };
+    }
+
     const params = new URLSearchParams({
         latitude: String(training.venue.lat),
         longitude: String(training.venue.lng),
@@ -320,68 +339,166 @@ async function fetchWeather(training) {
         forecast_days: "16"
     });
 
-    const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?${params}`
-    );
+    const url =
+        `https://api.open-meteo.com/v1/forecast?${params}`;
 
-    if (!response.ok) {
-        return "Прогноз погоды уточняется.";
+    let lastError = null;
+
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+        const controller = new AbortController();
+
+        const timeout = setTimeout(() => {
+            controller.abort();
+        }, 9_000);
+
+        try {
+            const response = await fetch(url, {
+                signal: controller.signal
+            });
+
+            clearTimeout(timeout);
+
+            if (!response.ok) {
+                throw new Error(
+                    `Open-Meteo HTTP ${response.status}`
+                );
+            }
+
+            const data = await response.json();
+
+            const forecast = buildWeatherText(
+                data,
+                start
+            );
+
+            if (!forecast) {
+                throw new Error(
+                    "В прогнозе нет данных на нужное время."
+                );
+            }
+
+            return {
+                ok: true,
+                text: forecast,
+                reason: ""
+            };
+        } catch (error) {
+            clearTimeout(timeout);
+
+            lastError = error;
+
+            console.warn(
+                `Weather request attempt ${attempt} failed:`,
+                error
+            );
+
+            if (attempt < 2) {
+                await sleep(900);
+            }
+        }
     }
 
-    const data = await response.json();
+    return {
+        ok: false,
+        text: "Прогноз погоды уточняется.",
+        reason:
+            lastError?.message ||
+            "Неизвестная ошибка при запросе прогноза."
+    };
+}
 
-    const hours = [-2, -1, 0, 1, 2].map((offset) => {
-        return new Date(
-            start.getTime() + offset * 60 * 60 * 1000
-        );
-    });
+function buildWeatherText(data, start) {
+    if (
+        !data?.hourly?.time ||
+        !data?.hourly?.temperature_2m ||
+        !data?.hourly?.precipitation_probability ||
+        !data?.hourly?.precipitation
+    ) {
+        return null;
+    }
 
-    const indexes = hours
-        .map(moscowHourIndex)
-        .map((time) => data.hourly.time.indexOf(time))
+    /*
+     * Берём окно ±2 часа от начала:
+     * температура усредняется,
+     * вероятность осадков — максимум,
+     * осадки — сумма по окну.
+     */
+    const relevantIndexes = [-2, -1, 0, 1, 2]
+        .map((offset) => {
+            const date = new Date(
+                start.getTime() +
+                offset * 60 * 60 * 1000
+            );
+
+            return moscowHourIndex(date);
+        })
+        .map((time) => {
+            return data.hourly.time.indexOf(time);
+        })
         .filter((index) => index >= 0);
 
-    if (!indexes.length) {
-        return "Прогноз погоды уточняется.";
+    if (!relevantIndexes.length) {
+        return null;
     }
 
-    const temperatures = indexes.map((index) => {
-        return data.hourly.temperature_2m[index];
-    });
+    const temperatures = relevantIndexes.map(
+        (index) => {
+            return data.hourly.temperature_2m[index];
+        }
+    );
 
-    const probabilities = indexes.map((index) => {
-        return data.hourly.precipitation_probability[index];
-    });
+    const probabilities = relevantIndexes.map(
+        (index) => {
+            return data.hourly
+                .precipitation_probability[index];
+        }
+    );
 
-    const precipitation = indexes.map((index) => {
-        return data.hourly.precipitation[index];
-    });
+    const precipitation = relevantIndexes.map(
+        (index) => {
+            return data.hourly.precipitation[index];
+        }
+    );
+
+    const averageTemperature =
+        temperatures.reduce((sum, value) => {
+            return sum + value;
+        }, 0) / temperatures.length;
 
     const temperature = Math.round(
-        temperatures.reduce((a, b) => a + b, 0) /
-        temperatures.length
+        averageTemperature
     );
 
-    const probability = Math.max(...probabilities);
-    const amount = precipitation.reduce(
-        (sum, value) => sum + value,
-        0
+    const maxProbability = Math.max(
+        ...probabilities
     );
+
+    const precipitationAmount =
+        precipitation.reduce((sum, value) => {
+            return sum + value;
+        }, 0);
 
     const sign = temperature > 0 ? "+" : "";
 
-    let rainText = "без существенных осадков";
+    let precipitationText =
+        "без существенных осадков";
 
-    if (probability >= 60 || amount >= 1) {
-        rainText =
-            `осадки вероятны до ${probability}%` +
-            `, около ${amount.toFixed(1)} мм`;
-    } else if (probability >= 30) {
-        rainText =
-            `небольшая вероятность осадков: до ${probability}%`;
+    if (
+        maxProbability >= 60 ||
+        precipitationAmount >= 1
+    ) {
+        precipitationText =
+            `осадки вероятны до ${maxProbability}%` +
+            `, около ${precipitationAmount.toFixed(1)} мм`;
+    } else if (maxProbability >= 30) {
+        precipitationText =
+            `небольшая вероятность осадков: до ${maxProbability}%`;
     }
 
-    return `Прогноз: ${sign}${temperature}°C, ${rainText}.`;
+    return (
+        `Прогноз: ${sign}${temperature}°C, ` +
+        `${precipitationText}.`
+    );
 }
 
 function moscowHourIndex(date) {
@@ -416,7 +533,29 @@ function showResult(training, url) {
 
     result.classList.remove("hidden");
 
+    const weatherWarning = !training.weatherOk
+    ? `
+        <section class="weather-warning">
+            <p class="weather-warning-title">
+                Внимание: прогноз не был получен
+            </p>
+
+            <p>
+                В тексте поста оставлено:
+                «Прогноз погоды уточняется».
+            </p>
+
+            <p class="weather-warning-detail">
+                Техническая причина:
+                ${esc(training.weatherReason)}
+            </p>
+        </section>
+    `
+    : "";
+
     result.innerHTML = `
+        ${weatherWarning}
+
         <section class="success-panel">
             <p class="eyebrow">Готово</p>
             <h2>Тренировка создана</h2>
@@ -465,26 +604,192 @@ function showResult(training, url) {
 }
 
 function announcementText(training, url) {
-    const isVote = training.types.length > 1;
+    const title = announcementTitle(training.types);
 
-    const title = isVote
-        ? "Фехтовальная тренировка"
-        : `${training.types[0]} тренировка`;
+    const date = announcementDate(training.date);
 
-    const typeText = isVote
-        ? `${training.types.join(" или ")} — зависит от количества участников.\n`
+    const voteText =
+        training.types.length > 1
+            ? "За формат голосуйте на сайте.\n\n"
+            : "";
+
+    const commentText = training.comment
+        ? `${training.comment}\n\n`
         : "";
 
-    return `${title} ${fmtDate(training.date)}.
-${typeText}
-Начало в ${training.time} у ${training.deployment.name} (зелёный крестик), место тренировки — ${training.venue.name} (красный крестик) на карте.
-Если опаздываете до 20:30, сначала подходите к ${training.deployment.name} помогать таскать снаряжение.
-Кворум ${training.quorum} человек, хотя бы один из которых ключник. Отсечка за 2 часа до тренировки, ждём ваши + в комментариях.
-${training.weather}
-Берите с собой перчатки для защиты рук от мозолей и не только.
-Техника безопасности:
-${C.SAFETY_URL}
-И расписаться за инструктаж на тренировке.
+    const deploymentAt = placeAt(
+        training.deployment.name
+    );
 
-Запись: ${url}`;
+    const deploymentTo = placeTo(
+        training.deployment.name
+    );
+
+    const lateTime = addMinutes(
+        training.time,
+        30
+    );
+
+    return `${title} ${date}.
+${voteText}${commentText}Начало в ${training.time} у ${deploymentAt}, место тренировки — ${training.venue.name}. Даже если вы опаздываете до ${lateTime}, подходите сначала к ${deploymentTo} помогать таскать снаряжение.
+
+${training.weather}
+
+Записываться по ссылке: ${url}`;
+}
+
+function announcementTitle(types) {
+    if (types.length > 1) {
+        return "Фехтовальная тренировка";
+    }
+
+    const type = types[0] || "";
+
+    if (
+        type === "Мягкая Дуэльная" ||
+        type === "Твёрдая Дуэльная"
+    ) {
+        return "Дуэльная тренировка";
+    }
+
+    if (type === "Мягкая строевая") {
+        return "Тактическая тренировка";
+    }
+
+    if (type === "Крафт") {
+        return "Крафт";
+    }
+
+    return "Фехтовальная тренировка";
+}
+
+function announcementDate(isoDate) {
+    const date = new Date(
+        `${isoDate}T12:00:00+03:00`
+    );
+
+    const weekdays = {
+        0: {
+            preposition: "в",
+            name: "воскресенье"
+        },
+
+        1: {
+            preposition: "в",
+            name: "понедельник"
+        },
+
+        2: {
+            preposition: "во",
+            name: "вторник"
+        },
+
+        3: {
+            preposition: "в",
+            name: "среду"
+        },
+
+        4: {
+            preposition: "в",
+            name: "четверг"
+        },
+
+        5: {
+            preposition: "в",
+            name: "пятницу"
+        },
+
+        6: {
+            preposition: "в",
+            name: "субботу"
+        }
+    };
+
+    const weekday = weekdays[date.getDay()];
+
+    const dayMonth = new Intl.DateTimeFormat("ru-RU", {
+        day: "numeric",
+        month: "long",
+        timeZone: "Europe/Moscow"
+    }).format(date);
+
+    return `${weekday.preposition} ${weekday.name}, ${dayMonth}`;
+}
+
+function normalizePlaceName(place) {
+    return String(place || "")
+        .trim()
+        .toLocaleLowerCase("ru-RU")
+        .replaceAll("ё", "е");
+}
+
+/*
+ * Форма места после «у».
+ *
+ * 8ка / восьмерка:
+ * у восьмерки
+ *
+ * КПМ:
+ * у КПМ
+ *
+ * Кастомное место:
+ * у <как введено админом>
+ */
+function placeAt(place) {
+    const normalized = normalizePlaceName(place);
+
+    if (
+        normalized === "8ка" ||
+        normalized === "8-ка" ||
+        normalized === "восьмерка"
+    ) {
+        return "восьмерки";
+    }
+
+    return place;
+}
+
+/*
+ * Форма места после «к».
+ *
+ * 8ка / восьмерка:
+ * к восьмерке
+ *
+ * КПМ:
+ * к КПМ
+ *
+ * Кастомное место:
+ * к <как введено админом>
+ */
+function placeTo(place) {
+    const normalized = normalizePlaceName(place);
+
+    if (
+        normalized === "8ка" ||
+        normalized === "8-ка" ||
+        normalized === "восьмерка"
+    ) {
+        return "восьмерке";
+    }
+
+    return place;
+}
+
+function addMinutes(time, minutesToAdd) {
+    const [hoursRaw, minutesRaw] = time
+        .split(":")
+        .map(Number);
+
+    const total =
+        hoursRaw * 60 +
+        minutesRaw +
+        minutesToAdd;
+
+    const hours = Math.floor(total / 60) % 24;
+    const minutes = total % 60;
+
+    return [
+        String(hours).padStart(2, "0"),
+        String(minutes).padStart(2, "0")
+    ].join(":");
 }

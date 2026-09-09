@@ -143,8 +143,10 @@ function renderTraining() {
         <div class="training-notes">
             <p>
                 Отсечка — за 2 часа до начала.
-                Если опаздываете до 20:30, сначала подойдите к
-                ${esc(deploymentName)}.
+                Если опаздываете до ${esc(
+                    addMinutes(training.time, 30)
+                )}, сначала подойдите к
+                ${esc(placeTo(training.deployment.name))}.
             </p>
 
             ${
@@ -157,6 +159,31 @@ function renderTraining() {
                     : ""
             }
         </div>
+
+        <section class="training-guidance">
+            <h2>Что взять и что прочитать</h2>
+
+            <p>
+                Берите с собой перчатки для защиты рук от мозолей и не только.
+            </p>
+
+            <p>
+                Для допуска к занятиям необходимо прочитать
+                <a
+                    target="_blank"
+                    rel="noopener"
+                    href="${esc(C.SAFETY_URL)}"
+                >
+                    краткую инструкцию по технике безопасности
+                </a>
+                и расписаться за инструктаж на тренировке.
+            </p>
+
+            <p>
+                Вопросы по инструкции и запрос полной версии ТБ можно
+                задавать в сообщения группы или в чате тренировок.
+            </p>
+        </section>
     `;
 
     renderMap();
@@ -750,4 +777,44 @@ function declension(number, one, few, many) {
     }
 
     return many;
+}
+
+function normalizePlaceName(place) {
+    return String(place || "")
+        .trim()
+        .toLocaleLowerCase("ru-RU")
+        .replaceAll("ё", "е");
+}
+
+function placeTo(place) {
+    const normalized = normalizePlaceName(place);
+
+    if (
+        normalized === "8ка" ||
+        normalized === "8-ка" ||
+        normalized === "восьмерка"
+    ) {
+        return "восьмерке";
+    }
+
+    return place;
+}
+
+function addMinutes(time, minutesToAdd) {
+    const [hoursRaw, minutesRaw] = time
+        .split(":")
+        .map(Number);
+
+    const total =
+        hoursRaw * 60 +
+        minutesRaw +
+        minutesToAdd;
+
+    const hours = Math.floor(total / 60) % 24;
+    const minutes = total % 60;
+
+    return [
+        String(hours).padStart(2, "0"),
+        String(minutes).padStart(2, "0")
+    ].join(":");
 }
