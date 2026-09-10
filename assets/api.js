@@ -359,6 +359,8 @@ function publicGet(payload) {
             script.remove();
         }
 
+        script.fetchPriority = "high";
+
         script.src = url.toString();
 
         document.head.appendChild(script);

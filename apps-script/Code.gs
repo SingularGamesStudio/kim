@@ -151,11 +151,7 @@ function listTrainings_() {
         })
         .slice(0, 30);
 
-    putCacheJson_(
-        cacheKey,
-        trainings,
-        20
-    );
+    putCacheJson_(cacheKey, trainings, 121600);
 
     return {
         ok: true,
@@ -238,7 +234,7 @@ function getTraining_(query) {
         putCacheJson_(
             trainingCacheKey,
             training,
-            600
+            121600
         );
     }
 
