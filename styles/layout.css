@@ -1,0 +1,188 @@
+/* Каркас страницы: контейнер, шапка, секции-панели. */
+
+.page-shell {
+    width: min(100% - 32px, 980px);
+    margin: 0 auto;
+    padding: 30px 0 72px;
+}
+
+.site-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 20px 0 38px;
+}
+
+.compact-header {
+    padding: 8px 0 30px;
+}
+
+.compact-header h1 {
+    margin-top: 18px;
+    font-size: 2.1rem;
+}
+
+.header-brand {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    gap: 16px;
+}
+
+.header-brand-text {
+    min-width: 0;
+}
+
+.header-brand .eyebrow {
+    margin-bottom: 3px;
+}
+
+.header-brand h1 {
+    margin-bottom: 4px;
+    white-space: nowrap;
+}
+
+.club-logo {
+    --logo-size: 76px;
+
+    display: block;
+    flex: 0 0 var(--logo-size);
+    width: var(--logo-size);
+    height: var(--logo-size);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: #ffffff;
+    object-fit: cover;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.24);
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 25px;
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--text);
+}
+
+/* Панели. */
+
+.section,
+.content-section,
+.form-section,
+.success-panel,
+.post-panel {
+    margin-top: 25px;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--radius);
+    padding: 22px;
+    background: var(--surface-panel);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.13);
+}
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.entries-heading {
+    align-items: flex-start;
+}
+
+/* Сетки. */
+
+.training-list,
+.entries {
+    display: grid;
+    gap: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 15px;
+}
+
+.checkbox-grid,
+.vote-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+@media (max-width: 720px) {
+    .page-shell {
+        width: min(100% - 24px, 980px);
+        padding-top: 20px;
+    }
+
+    .site-header {
+        display: grid;
+        padding-bottom: 25px;
+    }
+
+    .site-header .button {
+        width: 100%;
+    }
+
+    .section-heading,
+    .entries-heading {
+        display: grid;
+    }
+
+    .form-grid,
+    .checkbox-grid,
+    .vote-choice-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .header-brand {
+        gap: 13px;
+    }
+
+    .header-brand h1 {
+        font-size: clamp(1.75rem, 9vw, 2.4rem);
+    }
+
+    .club-logo {
+        --logo-size: 62px;
+
+        border-radius: 14px;
+    }
+}
+
+@media (max-width: 440px) {
+    .page-shell {
+        width: min(100% - 18px, 980px);
+    }
+
+    .section,
+    .content-section,
+    .form-section,
+    .success-panel,
+    .post-panel {
+        padding: 16px;
+    }
+
+    .header-brand {
+        gap: 11px;
+    }
+
+    .header-brand h1 {
+        white-space: normal;
+    }
+
+    .club-logo {
+        --logo-size: 52px;
+
+        border-radius: 12px;
+    }
+}

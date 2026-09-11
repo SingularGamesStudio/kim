@@ -2,153 +2,111 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
-    
-    <link
-        rel="icon"
-        type="image/jpeg"
-        href="assets/club-logo.jpg"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Тренировка — клуб фехтования МФТИ</title>
+    <meta name="description" content="Анонс тренировки и запись участников.">
 
-    <title>КИМ МФТИ - тренировка</title>
+    <link rel="preconnect" href="https://sheets.googleapis.com" crossorigin>
 
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="vendor/ol.css">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/pages.css">
 
-    <script defer src="assets/config.js"></script>
-    <script defer src="assets/api.js"></script>
-    <script defer src="vendor/ol.js"></script>
-    <script defer src="assets/training.js"></script>
+    <script type="module" src="src/pages/training.js"></script>
 </head>
-
 <body>
-    <main class="page-shell">
-        <aside id="safety" class="safety-banner">
-            <span>
-                Перед тренировкой прочитайте
-                <a
-                    target="_blank"
-                    rel="noopener"
-                    href="https://m.vk.ru/@kimmipt-kratkaya-instrukciya-po-tehnike-bezopasnosti-dlya-zanyatii-p"
-                >
-                    краткую инструкцию по технике безопасности
-                </a>.
-            </span>
+    <div class="page-shell">
+        <a class="back-link" href="index.html">← Все тренировки</a>
 
-            <button
-                id="hide-safety"
-                type="button"
-                aria-label="Закрыть"
-            >
-                ×
-            </button>
+        <aside id="safety" class="safety-banner">
+            <!-- Ссылка подставляется из src/config.js, чтобы не дублировать URL. -->
+            <p id="safety-text"></p>
+
+            <button id="hide-safety" type="button" aria-label="Скрыть напоминание">×</button>
         </aside>
 
-        <a class="back-link" href="index.html">
-            ← Все тренировки
-        </a>
+        <main>
+            <section id="training" class="content-section training-hero">
+                <div class="loading-state">
+                    <span class="spinner spinner-large"></span>
+                    <p class="status-text">Загружаем тренировку…</p>
+                </div>
+            </section>
 
-        <section
-            id="training"
-            class="training-hero"
-            aria-live="polite"
-        >
-            <div class="loading-state">
-                <span
-                    class="spinner spinner-large"
-                    aria-hidden="true"
-                ></span>
+            <section id="map-section" class="content-section hidden">
+                <div class="section-heading">
+                    <h2>Где собираемся</h2>
+                </div>
 
-                <p class="status-text">
-                    Загружаем тренировку…
+                <div class="map-frame">
+                    <div id="map" class="training-map"></div>
+
+                    <div id="map-loader" class="map-loader">
+                        <span class="spinner"></span>
+                        <p class="status-text">Загружаем карту…</p>
+                    </div>
+                </div>
+
+                <p class="map-help">
+                    Зелёный крестик — сбор и деплой, красный — место тренировки.
                 </p>
-            </div>
-        </section>
 
-        <div id="map" class="training-map hidden"></div>
+                <p id="map-status" class="hint hidden"></p>
+            </section>
 
-        <section
-            id="signup-section"
-            class="content-section hidden"
-        >
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Записаться или оставить комментарий</p>
+            <section id="signup-section" class="content-section hidden">
+                <div class="section-heading">
+                    <h2 id="signup-title">Записаться</h2>
                 </div>
-            </div>
 
-            <form id="signup-form" class="signup-form">
-                <label>
-                    Представьтесь
-                    <input
-                        id="name"
-                        maxlength="80"
-                        autocomplete="name"
-                        required
-                    >
-                </label>
+                <form id="signup-form" class="signup-form" novalidate>
+                    <label>
+                        Представьтесь
+                        <input id="name" name="name" type="text" maxlength="80"
+                               autocomplete="name" required>
+                    </label>
 
-                <label>
-                    Комментарий
-                    <textarea
-                        id="signup-comment"
-                        maxlength="500"
-                        placeholder="+"
-                    ></textarea>
-                </label>
+                    <label>
+                        Комментарий (необязательно)
+                        <textarea id="signup-comment" name="comment" maxlength="500"
+                                  placeholder="Например: Опоздаю минут на 40"></textarea>
+                    </label>
 
-                <div id="vote-options"></div>
+                    <div id="vote-options"></div>
 
-                <label class="honeypot">
-                    Не заполняйте
-                    <input
-                        id="website"
-                        tabindex="-1"
-                        autocomplete="off"
-                    >
-                </label>
+                    <div id="cancel-control"></div>
 
-                <div class="form-action-row">
-                    <button
-                        class="button button-primary"
-                        type="submit"
-                    >
-                        ОК
-                    </button>
+                    <div class="honeypot" aria-hidden="true">
+                        <label>
+                            Сайт
+                            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+                        </label>
+                    </div>
 
-                    <p
-                        id="signup-message"
-                        class="status-text"
-                        aria-live="polite"
-                    ></p>
-                </div>
-            </form>
-        </section>
+                    <div class="form-action-row">
+                        <button id="signup-submit" class="button button-primary" type="submit">
+                            Записаться
+                        </button>
 
-        <section
-            id="entries-section"
-            class="content-section hidden"
-        >
-            <div class="section-heading entries-heading">
-                <div>
-                    <p class="eyebrow">Текущий состав</p>
+                        <p id="signup-message" class="status-text hidden"></p>
+                    </div>
+                </form>
+            </section>
+
+            <section id="entries-section" class="content-section hidden">
+                <div class="section-heading entries-heading">
                     <h2>
-                        Комментарии
-                        <span id="participant-count"></span>
+                        Кто идёт
+                        <span id="participant-count" class="status-text"></span>
                     </h2>
+
+                    <div id="vote-results" class="vote-results"></div>
                 </div>
 
-                <div
-                    id="vote-results"
-                    class="vote-results"
-                ></div>
-            </div>
-
-            <div id="entries" class="entries"></div>
-        </section>
-    </main>
+                <div id="entries" class="entries"></div>
+            </section>
+        </main>
+    </div>
 </body>
 </html>
