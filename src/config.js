@@ -10,7 +10,7 @@ export const GOOGLE_CLIENT_ID =
     '577883504204-rtbbudqqdga003qh59i52t4fr4gkk6qs.apps.googleusercontent.com';
 
 /** Публичный API key для анонимного чтения обеих таблиц. */
-export const SHEETS_API_KEY = 'PASTE_PUBLIC_SHEETS_API_KEY_HERE';
+export const SHEETS_API_KEY = 'AIzaSyCbJU8PpdOVXxt4MpbnImm-wvhc_FXKHJQ';
 
 /** Таблица с тренировками: чтение — публичное, запись — только админ (OAuth). */
 export const TRAININGS = {
@@ -20,8 +20,8 @@ export const TRAININGS = {
 
 /** Таблица с комментариями: чтение — публичное, запись — через Apps Script. */
 export const COMMENTS = {
-    spreadsheetId: 'PASTE_PUBLIC_COMMENTS_SPREADSHEET_ID_HERE',
-    sheet: 'Comments',
+    spreadsheetId: '12esXl0g1E9qbqZaW8QvYiDApNwjzppZJqaGJNmsH8fA',
+    sheet: 'Signups',
 };
 
 /**
@@ -29,7 +29,7 @@ export const COMMENTS = {
  * Sheets API не умеет анонимную запись даже в публично редактируемую таблицу.
  */
 export const ADD_COMMENT_URL =
-    'https://script.google.com/macros/s/PASTE_NEW_DEPLOYMENT_ID/exec';
+    'https://script.google.com/macros/s/AKfycbwFjUKTwAvlOz5lMopLD2jdn4xD3lVpAhJt0Ij8ADPhonExBnwU9OTUFxONxIosJrp8dw/exec';
 
 export const BASE_URL = 'https://singulargamesstudio.github.io/kim/';
 
