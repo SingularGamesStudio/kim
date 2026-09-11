@@ -2,200 +2,121 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Новая тренировка — клуб фехтования МФТИ</title>
+    <meta name="robots" content="noindex">
 
-    <link
-        rel="icon"
-        type="image/jpeg"
-        href="assets/club-logo.jpg"
-    >
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/pages.css">
 
-    <title>КИМ МФТИ - создать тренировку</title>
-
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="vendor/ol.css">
-
-    <script
-        src="https://accounts.google.com/gsi/client"
-        async
-    ></script>
-
-    <script defer src="assets/config.js"></script>
-    <script defer src="assets/api.js"></script>
-    <script defer src="vendor/ol.js"></script>
-    <script defer src="assets/create.js"></script>
+    <script type="module" src="src/pages/create.js"></script>
 </head>
-
 <body>
-    <main class="page-shell">
-        <header class="compact-header">
-            <a href="index.html">← К списку тренировок</a>
-            <h1>Создать тренировку</h1>
-            <p
-                id="auth-state"
-                class="status-text"
-                aria-live="polite"
-            ></p>
+    <div class="page-shell">
+        <a class="back-link" href="index.html">← Все тренировки</a>
+
+        <header class="site-header compact-header">
+            <div>
+                <p class="eyebrow">Только для организаторов</p>
+                <h1>Новая тренировка</h1>
+                <p id="auth-state" class="status-text">Проверяем доступ…</p>
+            </div>
         </header>
 
-        <form
-            id="training-form"
-            class="editor-form hidden"
-        >
-            <section class="form-section">
-                <h2>Вид тренировки</h2>
+        <main>
+            <form id="training-form" class="editor-form hidden">
+                <section class="form-section">
+                    <div class="section-heading">
+                        <h2>Когда и что</h2>
+                    </div>
 
-                <div class="checkbox-grid">
-                    <label class="check-card">
-                        <input
-                            type="checkbox"
-                            name="type"
-                            value="Мягкая строевая"
-                        >
-                        <span>Мягкая строевая</span>
-                    </label>
+                    <div class="form-grid">
+                        <label>
+                            Дата
+                            <input id="date" type="date" required>
+                        </label>
 
-                    <label class="check-card">
-                        <input
-                            type="checkbox"
-                            name="type"
-                            value="Мягкая Дуэльная"
-                        >
-                        <span>Мягкая дуэльная</span>
-                    </label>
+                        <label>
+                            Время начала
+                            <input id="time" type="time" value="19:00" required>
+                        </label>
 
-                    <label class="check-card">
-                        <input
-                            type="checkbox"
-                            name="type"
-                            value="Твёрдая Дуэльная"
-                        >
-                        <span>Твёрдая дуэльная</span>
-                    </label>
+                        <label>
+                            Кворум
+                            <input id="quorum" type="number" min="1" max="99" value="8" required>
+                        </label>
+                    </div>
 
-                    <label class="check-card">
-                        <input
-                            type="checkbox"
-                            name="type"
-                            value="Крафт"
-                        >
-                        <span>Крафт</span>
-                    </label>
-                </div>
+                    <div id="type-grid" class="checkbox-grid"></div>
 
-                <p class="hint">
-                    Если выбрать несколько вариантов, участники смогут голосовать.
-                </p>
-            </section>
+                    <p class="hint">
+                        Если выбрать больше одного вида, на странице тренировки
+                        появится голосование.
+                    </p>
+                </section>
 
-            <section class="form-section">
-                <h2>Время и кворум</h2>
+                <section class="form-section">
+                    <div class="section-heading">
+                        <h2>Где</h2>
+                    </div>
 
-                <div class="form-grid">
-                    <label>
-                        День
-                        <input id="date" type="date" required>
-                    </label>
+                    <div class="form-grid">
+                        <label>
+                            Сбор и деплой
+                            <select id="deployment-preset"></select>
+                        </label>
 
-                    <label>
-                        Время
-                        <input
-                            id="time"
-                            type="time"
-                            value="20:00"
-                            required
-                        >
-                    </label>
+                        <label>
+                            Место тренировки
+                            <select id="venue-preset"></select>
+                        </label>
+                    </div>
 
-                    <label>
-                        Кворум
-                        <input
-                            id="quorum"
-                            type="number"
-                            min="1"
-                            value="4"
-                            required
-                        >
-                    </label>
-                </div>
-            </section>
+                    <div class="form-grid">
+                        <label id="deployment-custom-wrap" class="hidden">
+                            Название точки сбора
+                            <input id="deployment-custom" type="text" maxlength="60"
+                                   placeholder="Например: у КПП">
+                        </label>
 
-            <section class="form-section">
-                <h2>Комментарий</h2>
+                        <label id="venue-custom-wrap" class="hidden">
+                            Название места тренировки
+                            <input id="venue-custom" type="text" maxlength="60"
+                                   placeholder="Например: спортзал">
+                        </label>
+                    </div>
 
-                <textarea
-                    id="comment"
-                    placeholder="Необязательно"
-                ></textarea>
-            </section>
+                    <div id="map" class="map-editor"></div>
 
-            <section class="form-section">
-                <h2>Локации</h2>
+                    <p class="map-help">
+                        Перетащите крестики: зелёный — сбор и деплой,
+                        красный — место тренировки.
+                    </p>
+                </section>
 
-                <div class="form-grid">
-                    <label>
-                        Место деплоя
-
-                        <select id="deployment-preset">
-                            <option value="8ка">8ка</option>
-                            <option value="КПМ">КПМ</option>
-                            <option value="custom">Другое место</option>
-                        </select>
-                    </label>
-
-                    <label
-                        id="deployment-custom-wrap"
-                        class="hidden"
-                    >
-                        Название своего места
-                        <input id="deployment-custom">
-                    </label>
+                <section class="form-section">
+                    <div class="section-heading">
+                        <h2>Комментарий к анонсу</h2>
+                    </div>
 
                     <label>
-                        Место тренировки
-
-                        <select id="venue-preset">
-                            <option value="Обезьянник">
-                                Обезьянник
-                            </option>
-                            <option value="custom">
-                                Другое место
-                            </option>
-                        </select>
+                        Текст (необязательно)
+                        <textarea id="comment" maxlength="500"
+                                  placeholder="Например: берём мягкое оружие на всех"></textarea>
                     </label>
 
-                    <label
-                        id="venue-custom-wrap"
-                        class="hidden"
-                    >
-                        Название своего места
-                        <input id="venue-custom">
-                    </label>
-                </div>
+                    <div class="form-action-row form-action-row-spaced">
+                        <button class="button button-primary" type="submit">
+                            Создать тренировку
+                        </button>
+                    </div>
+                </section>
+            </form>
 
-                <div class="map-help">
-                    Крестики можно двигать по карте.
-                    Зелёный — деплой, красный — тренировка.
-                </div>
-
-                <div id="map" class="map-editor"></div>
-            </section>
-
-            <button
-                class="button button-primary"
-                type="submit"
-            >
-                Создать тренировку
-            </button>
-        </form>
-
-        <section
-            id="result"
-            class="creation-result hidden"
-        ></section>
-    </main>
+            <div id="result" class="creation-result hidden"></div>
+        </main>
+    </div>
 </body>
 </html>

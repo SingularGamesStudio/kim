@@ -1,0 +1,224 @@
+/* Переиспользуемые элементы: кнопки, спиннер, карточки, баннеры. */
+
+.button {
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    padding: 10px 15px;
+    color: #ffffff;
+    font-weight: 750;
+    transition:
+        transform 120ms ease,
+        background 120ms ease,
+        border-color 120ms ease;
+}
+
+.button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+.button-primary {
+    background: var(--accent);
+}
+
+.button-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+}
+
+.button-secondary {
+    border-color: var(--line);
+    background: var(--surface);
+}
+
+.button-secondary:hover:not(:disabled) {
+    border-color: #536a82;
+    background: var(--surface-hover);
+}
+
+/* Спиннер и состояние загрузки. */
+
+.loading-state {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 72px;
+    padding: 12px 0;
+}
+
+.spinner {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--accent-soft);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spinner-rotate 700ms linear infinite;
+}
+
+.spinner-large {
+    width: 26px;
+    height: 26px;
+    border-width: 4px;
+}
+
+@keyframes spinner-rotate {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Карточка тренировки в списке. */
+
+.training-card {
+    display: grid;
+    grid-template-columns: 158px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
+    border: 1px solid var(--line-soft);
+    border-radius: 11px;
+    padding: 16px;
+    background: var(--surface-muted);
+    color: var(--text);
+    text-decoration: none;
+    transition:
+        border-color 140ms ease,
+        background 140ms ease,
+        transform 140ms ease;
+}
+
+.training-card:hover {
+    border-color: #4a647e;
+    background: var(--surface-hover);
+    color: var(--text);
+    transform: translateY(-1px);
+}
+
+.training-card-date {
+    color: var(--accent);
+    font-size: 1.03rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.training-card-main {
+    min-width: 0;
+}
+
+.card-type {
+    margin-bottom: 4px;
+    font-size: 1.05rem;
+    font-weight: 750;
+}
+
+.card-meta {
+    margin-bottom: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.card-arrow {
+    color: var(--accent);
+    font-size: 1.6rem;
+}
+
+@media (max-width: 620px) {
+    .training-card {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px 14px;
+    }
+
+    .training-card-date,
+    .training-card-main {
+        grid-column: 1;
+    }
+
+    .card-arrow {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+}
+
+/* Чекбоксы и радиокнопки в виде карточек. */
+
+.check-card,
+.vote-choice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-small);
+    padding: 11px 12px;
+    background: var(--surface-muted);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.check-card input,
+.vote-choice input {
+    width: auto;
+    margin: 0;
+    accent-color: var(--accent);
+}
+
+.check-card:hover,
+.vote-choice:hover {
+    border-color: var(--line-hover);
+}
+
+/* Баннер техники безопасности. */
+
+.safety-banner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(228, 180, 81, 0.5);
+    border-radius: 11px;
+    padding: 13px 15px;
+    background: rgba(86, 66, 22, 0.45);
+    color: #f4e3af;
+}
+
+.safety-banner button {
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-size: 1.55rem;
+    line-height: 1;
+}
+
+/* Предупреждение о неполученном прогнозе. */
+
+.weather-warning {
+    border: 2px solid var(--warning);
+    border-radius: var(--radius);
+    padding: 19px;
+    background: linear-gradient(
+        135deg,
+        rgba(180, 102, 11, 0.42),
+        rgba(75, 42, 10, 0.56)
+    );
+    color: #ffe5ad;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.weather-warning p {
+    margin-bottom: 9px;
+}
+
+.weather-warning p:last-child {
+    margin-bottom: 0;
+}
+
+.weather-warning-title {
+    color: #fff4d1;
+    font-size: 1.2rem;
+    font-weight: 850;
+}
+
+.weather-warning-detail {
+    color: #f3d59b;
+    font-size: 0.88rem;
+}

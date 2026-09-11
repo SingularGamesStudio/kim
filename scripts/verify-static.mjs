@@ -1,31 +1,54 @@
-import {
-    access,
-    stat
-} from "node:fs/promises";
-
-import {
-    constants
-} from "node:fs";
+/**
+ * Проверка перед публикацией на GitHub Pages: все файлы, на которые ссылаются
+ * страницы, лежат в репозитории и не пустые, а в конфиге не осталось
+ * незаполненных placeholder-ов.
+ */
+import { access, readFile, stat } from 'node:fs/promises';
+import { constants } from 'node:fs';
 
 const requiredFiles = [
-    "index.html",
-    "create.html",
-    "training.html",
+    'index.html',
+    'training.html',
+    'create.html',
 
-    "assets/config.js",
-    "assets/api.js",
-    "assets/admin.js",
-    "assets/create.js",
-    "assets/training.js",
-    "assets/style.css",
+    'styles/base.css',
+    'styles/layout.css',
+    'styles/components.css',
+    'styles/pages.css',
 
-    "vendor/ol.js",
-    "vendor/ol.css",
+    'src/config.js',
 
-    ".nojekyll"
+    'src/core/dom.js',
+    'src/core/columns.js',
+    'src/core/format.js',
+    'src/core/auth.js',
+    'src/core/sheets.js',
+
+    'src/data/trainings.js',
+    'src/data/comments.js',
+
+    'src/features/map.js',
+    'src/features/weather.js',
+    'src/features/announcement.js',
+
+    'src/views/training-card.js',
+    'src/views/training-hero.js',
+    'src/views/comments.js',
+    'src/views/creation-result.js',
+
+    'src/pages/home.js',
+    'src/pages/training.js',
+    'src/pages/create.js',
+
+    'assets/club-logo.jpg',
+
+    'vendor/ol.js',
+    'vendor/ol.css',
+
+    '.nojekyll',
 ];
 
-let failed = false;
+const problems = [];
 
 for (const file of requiredFiles) {
     try {
@@ -33,28 +56,28 @@ for (const file of requiredFiles) {
 
         const info = await stat(file);
 
-        if (info.isFile() && info.size === 0 && file!=".nojekyll") {
-            console.error(
-                `FAIL: ${file} существует, но пустой.`
-            );
-
-            failed = true;
+        if (info.isFile() && info.size === 0 && file !== '.nojekyll') {
+            problems.push(`${file} существует, но пустой.`);
 
             continue;
         }
 
         console.log(`OK: ${file}`);
     } catch {
-        console.error(
-            `FAIL: не найден обязательный файл ${file}`
-        );
-
-        failed = true;
+        problems.push(`не найден обязательный файл ${file}`);
     }
 }
 
-if (failed) {
+const config = await readFile('src/config.js', 'utf8');
+
+for (const match of config.matchAll(/'(PASTE_[A-Z_]+)'/g)) {
+    problems.push(`в src/config.js не заполнено значение ${match[1]}.`);
+}
+
+if (problems.length) {
+    problems.forEach((problem) => console.error(`FAIL: ${problem}`));
+
     process.exit(1);
 }
 
-console.log("Static deployment check passed.");
+console.log('Static deployment check passed.');

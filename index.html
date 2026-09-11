@@ -2,93 +2,57 @@
 <html lang="ru">
 <head>
     <meta charset="utf-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Клуб исторического фехтования МФТИ — тренировки</title>
+    <meta name="description" content="Расписание и запись на тренировки клуба исторического фехтования МФТИ.">
 
-    <link
-        rel="icon"
-        type="image/jpeg"
-        href="assets/club-logo.jpg"
-    >
+    <link rel="preconnect" href="https://sheets.googleapis.com" crossorigin>
 
-    <title>КИМ МФТИ - тренировки</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/layout.css">
+    <link rel="stylesheet" href="styles/components.css">
 
-    <link rel="stylesheet" href="assets/style.css">
+    <!-- Нужен только для входа админа; на чтение расписания не влияет. -->
+    <script src="https://accounts.google.com/gsi/client" async></script>
 
-    <script
-        src="https://accounts.google.com/gsi/client"
-        async
-    ></script>
-
-    <script defer src="assets/config.js"></script>
-    <script defer src="assets/api.js"></script>
-    <script defer src="assets/admin.js"></script>
+    <script type="module" src="src/pages/home.js"></script>
 </head>
-
 <body>
-    <main class="page-shell">
+    <div class="page-shell">
         <header class="site-header">
             <div class="header-brand">
-                <img
-                    class="club-logo"
-                    src="assets/club-logo.jpg"
-                    alt="КИМ МФТИ"
-                >
+                <img class="club-logo" src="assets/club-logo.jpg" alt="Эмблема клуба" width="76" height="76">
 
                 <div class="header-brand-text">
-                    <p class="eyebrow">
-                        Фехтовальное направление
-                    </p>
-
-                    <h1>КИМ МФТИ</h1>
-
-                    <p class="header-text">
-                        Запись на странице конкретной тренировки.
-                    </p>
+                    <p class="eyebrow">МФТИ</p>
+                    <h1>Клуб фехтования</h1>
+                    <p class="header-text">Тренировки, запись и анонсы</p>
                 </div>
             </div>
 
-            <button
-                id="create-training-button"
-                class="button button-primary"
-                type="button"
-            >
-                Создать тренировку (админ)
-            </button>
+            <div>
+                <button id="create-training-button" class="button button-secondary" type="button">
+                    Создать тренировку
+                </button>
+
+                <p id="admin-state" class="status-text hidden"></p>
+            </div>
         </header>
 
-        <p
-            id="admin-state"
-            class="status-text"
-            aria-live="polite"
-        ></p>
-
-        <section class="section">
-            <div class="section-heading">
-                <div>
-                    <p class="eyebrow">Запись на тренировки</p>
+        <main>
+            <section class="section">
+                <div class="section-heading">
+                    <h2>Ближайшие тренировки</h2>
                 </div>
-            </div>
 
-            <div
-                id="training-list"
-                class="training-list"
-                aria-live="polite"
-            >
-                <div class="loading-state">
-                    <span
-                        class="spinner"
-                        aria-hidden="true"
-                    ></span>
-
-                    <p class="status-text">
-                        Загружаем анонсы…
-                    </p>
+                <div id="training-list" class="training-list">
+                    <div class="loading-state">
+                        <span class="spinner spinner-large"></span>
+                        <p class="status-text">Загружаем расписание…</p>
+                    </div>
                 </div>
-            </div>
-        </section>
-    </main>
+            </section>
+        </main>
+    </div>
 </body>
-</html>ф
+</html>
