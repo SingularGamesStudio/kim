@@ -57,8 +57,7 @@ function initSafetyBanner() {
         $('#safety-text'),
         'Перед первой тренировкой прочитайте ' +
             `<a target="_blank" rel="noopener" href="${SAFETY_URL}">` +
-            'инструкцию по технике безопасности</a>' +
-            ' и распишитесь за инструктаж на тренировке.',
+            'инструкцию по технике безопасности.</a>',
     );
 
     $('#hide-safety')?.addEventListener('click', () => {
@@ -159,7 +158,7 @@ function initSignupForm() {
     renderSignupMode();
 
     // Смена имени меняет и режим формы: у другого человека записи может не быть.
-    nameInput.addEventListener('change', renderSignupMode);
+    nameInput.addEventListener('input', renderSignupMode);
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -172,7 +171,7 @@ function initSignupForm() {
         const name = nameInput.value.trim();
 
         if (!name) {
-            setStatus(message, 'Введите имя или позывной.', true);
+            setStatus(message, 'Представьтесь.', true);
             nameInput.focus();
 
             return;
@@ -265,6 +264,7 @@ async function load() {
     comments = await commentsRequest;
 
     renderComments();
+    renderSignupMode();
 
     afterPaint(renderMap);
 }

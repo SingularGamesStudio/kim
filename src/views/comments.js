@@ -127,7 +127,7 @@ function commentLine(comment) {
     return `
         <div class="entry-comment">
             <span class="entry-comment-text ${isPlus ? 'entry-plus' : ''}">
-                ${cancelled ? '<em>Отменил запись.</em> ' : ''}${esc(text)}
+                ${cancelled ? '<em>Отмена. </em> ' : ''}${esc(text)}
             </span>
             <time>${esc(commentTime(comment.sentAt))}</time>
         </div>

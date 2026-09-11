@@ -40,12 +40,12 @@
 
                         <label>
                             Время начала
-                            <input id="time" type="time" value="19:00" required>
+                            <input id="time" type="time" value="20:00" required>
                         </label>
 
                         <label>
                             Кворум
-                            <input id="quorum" type="number" min="1" max="99" value="8" required>
+                            <input id="quorum" type="number" min="0" max="99" value="4" required>
                         </label>
                     </div>
 
@@ -77,14 +77,12 @@
                     <div class="form-grid">
                         <label id="deployment-custom-wrap" class="hidden">
                             Название точки сбора
-                            <input id="deployment-custom" type="text" maxlength="60"
-                                   placeholder="Например: у КПП">
+                            <input id="deployment-custom" type="text" maxlength="60">
                         </label>
 
                         <label id="venue-custom-wrap" class="hidden">
                             Название места тренировки
-                            <input id="venue-custom" type="text" maxlength="60"
-                                   placeholder="Например: спортзал">
+                            <input id="venue-custom" type="text" maxlength="60">
                         </label>
                     </div>
 
@@ -103,8 +101,7 @@
 
                     <label>
                         Текст (необязательно)
-                        <textarea id="comment" maxlength="500"
-                                  placeholder="Например: берём мягкое оружие на всех"></textarea>
+                        <textarea id="comment" maxlength="500"></textarea>
                     </label>
 
                     <div class="form-action-row form-action-row-spaced">
