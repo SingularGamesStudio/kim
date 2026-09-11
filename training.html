@@ -20,10 +20,8 @@
         <a class="back-link" href="index.html">← Все тренировки</a>
 
         <aside id="safety" class="safety-banner">
-            <p>
-                Перед первой тренировкой прочитайте инструкцию по технике
-                безопасности — ссылка в блоке «Что взять и что прочитать».
-            </p>
+            <!-- Ссылка подставляется из src/config.js, чтобы не дублировать URL. -->
+            <p id="safety-text"></p>
 
             <button id="hide-safety" type="button" aria-label="Скрыть напоминание">×</button>
         </aside>
@@ -59,7 +57,7 @@
 
             <section id="signup-section" class="content-section hidden">
                 <div class="section-heading">
-                    <h2>Записаться</h2>
+                    <h2 id="signup-title">Записаться</h2>
                 </div>
 
                 <form id="signup-form" class="signup-form" novalidate>
@@ -77,6 +75,8 @@
 
                     <div id="vote-options"></div>
 
+                    <div id="cancel-control"></div>
+
                     <div class="honeypot" aria-hidden="true">
                         <label>
                             Сайт
@@ -85,7 +85,9 @@
                     </div>
 
                     <div class="form-action-row">
-                        <button class="button button-primary" type="submit">Записаться</button>
+                        <button id="signup-submit" class="button button-primary" type="submit">
+                            Записаться
+                        </button>
 
                         <p id="signup-message" class="status-text hidden"></p>
                     </div>

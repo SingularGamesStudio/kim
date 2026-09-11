@@ -13,11 +13,13 @@ import { createMap, fitBoth, loadOl, marker } from '../features/map.js';
 import { trainingHero } from '../views/training-hero.js';
 import {
     commentEntries,
+    findParticipant,
     hasVote,
     participantCount,
     voteFieldset,
     voteResults,
 } from '../views/comments.js';
+import { CANCEL_MARK, SAFETY_URL } from '../config.js';
 
 const NAME_STORAGE_KEY = 'kimSignupName';
 const SAFETY_STORAGE_KEY = 'kimSafetyDismissed';
@@ -51,6 +53,14 @@ function initSafetyBanner() {
         return;
     }
 
+    render(
+        $('#safety-text'),
+        'Перед первой тренировкой прочитайте ' +
+            `<a target="_blank" rel="noopener" href="${SAFETY_URL}">` +
+            'инструкцию по технике безопасности</a>' +
+            ' и распишитесь за инструктаж на тренировке.',
+    );
+
     $('#hide-safety')?.addEventListener('click', () => {
         localStorage.setItem(SAFETY_STORAGE_KEY, '1');
 
@@ -59,10 +69,49 @@ function initSafetyBanner() {
 }
 
 function renderComments() {
-    setStatus($('#participant-count'), participantCount(comments));
+    setStatus($('#participant-count'), participantCount(training, comments));
 
     render($('#vote-results'), voteResults(training, comments));
     render($('#entries'), commentEntries(comments));
+}
+
+/**
+ * Форма меняется в зависимости от того, есть ли уже запись на это имя:
+ * новая запись → «Записаться»;
+ * запись есть → «Добавить комментарий» и галка отмены;
+ * запись отменена → пояснение, что новый комментарий вернёт запись.
+ */
+function renderSignupMode() {
+    const existing = findParticipant(comments, $('#name').value);
+
+    render($('#vote-options'), voteFieldset(training, existing?.choice ?? ''));
+
+    const title = existing ? 'Добавить комментарий' : 'Записаться';
+
+    $('#signup-title').textContent = title;
+    $('#signup-submit').textContent = title;
+
+    if (existing?.cancelled) {
+        render(
+            $('#cancel-control'),
+            '<p class="cancel-note">Запись отменена. Добавление нового ' +
+                'комментария снова запишет вас на тренировку.</p>',
+        );
+
+        return;
+    }
+
+    render(
+        $('#cancel-control'),
+        existing
+            ? `
+                <label class="cancel-choice">
+                    <input id="cancel-signup" type="checkbox">
+                    <span>Отменить запись</span>
+                </label>
+            `
+            : '',
+    );
 }
 
 /** Карта инициализируется последней: она самая тяжёлая часть страницы. */
@@ -105,9 +154,12 @@ function initSignupForm() {
     const message = $('#signup-message');
     const submitButton = form.querySelector('[type="submit"]');
 
-    render($('#vote-options'), voteFieldset(training));
-
     nameInput.value = localStorage.getItem(NAME_STORAGE_KEY) ?? '';
+
+    renderSignupMode();
+
+    // Смена имени меняет и режим формы: у другого человека записи может не быть.
+    nameInput.addEventListener('change', renderSignupMode);
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -137,7 +189,10 @@ function initSignupForm() {
             return;
         }
 
-        const text = commentInput.value.trim() || '+';
+        // Отмена — тот же append-only комментарий, только с техническим символом.
+        const cancelling = Boolean($('#cancel-signup')?.checked);
+        const comment = commentInput.value.trim();
+        const text = cancelling ? CANCEL_MARK + comment : comment || '+';
 
         localStorage.setItem(NAME_STORAGE_KEY, name);
 
@@ -150,6 +205,7 @@ function initSignupForm() {
         comments = [...comments, { name, text, choice, sentAt: new Date().toISOString() }];
 
         renderComments();
+        renderSignupMode();
 
         commentInput.value = '';
 
@@ -161,8 +217,12 @@ function initSignupForm() {
             comments = await waitForComment(key, name, text);
 
             renderComments();
+            renderSignupMode();
 
-            setStatus(message, 'Готово: вы записаны.');
+            setStatus(
+                message,
+                cancelling ? 'Готово: запись отменена.' : 'Готово: вы записаны.',
+            );
         } catch (error) {
             console.error(error);
 

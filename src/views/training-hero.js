@@ -47,7 +47,6 @@ export function trainingHero(training) {
                 'Место тренировки',
                 place(training.venue.name, 'красный крестик', 'marker-red'),
             )}
-            ${fact('Кворум', `${esc(training.quorum)} чел.`)}
         </div>
 
         <div class="training-notes">
