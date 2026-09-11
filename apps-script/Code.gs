@@ -14,7 +14,7 @@
 /** Ширина блока столбцов, отведённого одной тренировке. */
 var BLOCK_WIDTH = 4;
 
-var SHEET_NAME = 'Comments';
+var SHEET_NAME = 'Signups';
 
 var LIMITS = { name: 80, comment: 500, choice: 60 };
 
@@ -115,7 +115,7 @@ function doPost(e) {
 
     try {
         var sheet =
-            SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+            SpreadsheetApp.openById(getProperty_("SIGNUPS_SHEET_ID")).getSheetByName(SHEET_NAME);
 
         if (!sheet) {
             return json({ ok: false, error: 'no_sheet' });
@@ -138,4 +138,18 @@ function doPost(e) {
     } finally {
         lock.releaseLock();
     }
+}
+
+function getProperty_(key) {
+    const value = PropertiesService
+        .getScriptProperties()
+        .getProperty(key);
+
+    if (!value) {
+        throw new Error(
+            `Не задано Script Property: ${key}`
+        );
+    }
+
+    return value;
 }
